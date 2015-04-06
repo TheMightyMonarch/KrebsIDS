@@ -21,10 +21,7 @@ class UsersController extends ControllerBase {
 	//Login business logic
 	public function loginAction(){
 		if($this->session->get('id')){
-			$this->dispatcher->forward(array(
-				'controller'	=> 'users',
-				'action'		=> 'settings'
-			));
+			$this->response->redirect("users/settings");
 		}
 	
 		if(!$this->request->isPost() || $this->request->getPost('registered') == true) return;
@@ -41,20 +38,12 @@ class UsersController extends ControllerBase {
 				$this->session->set('id', $user->Id);
 				$this->session->set('username', $username);
 
-				//Clear out data we don't want people seeing
-				unset($_POST['password']);
-
-				$this->dispatcher->forward(array(
-					'controller'	=> 'users',
-					'action'		=> 'settings'
-				));
+				$this->response->redirect("users/settings");
 			}
 		}
 
 		//Their login failed, no need to tell them why
-		$messages[] = "Login failed.";
-		
-		$this->view->setVar('messages', $messages);
+		$this->flashSession->error("Login failed.");
 	}
 
 	/*
@@ -65,8 +54,6 @@ class UsersController extends ControllerBase {
 	 */
 	public function registerAction(){
 		if(!$this->request->isPost()) return;
-
-		$messages = array();
 
 		$user = new Users();
 
@@ -83,8 +70,8 @@ class UsersController extends ControllerBase {
 		$user->ResumeFile = "none";
 
 		if($user->Password !== $passwordConfirm){
-			$messages[] = "Passwords must match";
-			$this->view->setVar('messages', $messages);
+			$this->flashSession->error("Passwords must match.");
+			
 			return;
 		}
 
@@ -94,19 +81,15 @@ class UsersController extends ControllerBase {
 		if($user->save() !== false){
 			//TODO add email verification
 
-			$messages[] = "User account successfully created!";
-	
 			$this->flashSession->success($user->FirstName . " " . $user->LastName . ", you are now registered. Please log in to view your settings page.");
 			
 			$this->response->redirect("users/login");
 		}
 		else{
 			foreach($user->getMessages() as $message){
-				$messages[] = $message->getMessage();
+				$this->flashSession->error($message);
 			}
 		}
-		
-		$this->view->setVar('messages', $messages);
 	}
 	
 	public function settingsAction(){

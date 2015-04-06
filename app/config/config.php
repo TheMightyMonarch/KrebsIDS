@@ -22,8 +22,8 @@ return new \Phalcon\Config(array(
 		'host'		=> 'ssl://smtp.gmail.com',
 		'port'		=> '465',
 		'auth'		=> true,
-		'username'	=> 'flyingwithrob@gmail.com',
+		'username'	=> '',
 		'password'	=> '',
-		'from'		=> 'Seth Bean <flyingwithrob@gmail.com>'
+		'from'		=> ''
 	)
 ));

@@ -1,8 +1,0 @@
-<?php
-
-class ControllerBase extends \Phalcon\Mvc\Controller
-{
-	public function onConstruct(){
-		exit('here');
-	}
-}
