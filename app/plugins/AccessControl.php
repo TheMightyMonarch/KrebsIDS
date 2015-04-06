@@ -36,7 +36,13 @@ class AccessControl extends Plugin {
 
 			//Private area resources
 			$privateResources = array(
-				'members' => array('index')
+				'users' => array(
+					'settings',
+					'uploadResume',
+					'ajaxAddSkill',
+					'ajaxAddCompanyAlias',
+					'ajaxAddCoverTemplate'
+				)
 			);
 			foreach ($privateResources as $resource => $actions) {
 				$acl->addResource(new Phalcon\Acl\Resource($resource), $actions);
@@ -50,12 +56,7 @@ class AccessControl extends Plugin {
 				'users' => array(
 					'index',
 					'login',
-					'register',
-					'settings',
-					'uploadResume',
-					'ajaxAddSkill',
-					'ajaxAddCompanyAlias',
-					'ajaxAddCoverTemplate'
+					'register'
 				)
 			);
 			foreach ($publicResources as $resource => $actions) {
