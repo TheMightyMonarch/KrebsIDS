@@ -36,4 +36,10 @@ Frontend cleanup - Not Started
 
 Security testing via SqlMap and manual XSS injection - Up to date with completed functionality
 
+======================================
+Requirements for use
+======================================
+
+>= PHP 5.3
+>= PHalcon 1.3.0
 
