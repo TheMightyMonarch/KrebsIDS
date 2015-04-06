@@ -153,7 +153,7 @@ class UsersController extends ControllerBase {
 				//TODO add mutliple resume support
 				
 				//make our filename safe
-				$username = preg_replace("/[^a-zA-Z0-9]/g", "", $this->session->get("username"));
+				$username = preg_replace("/[^a-zA-Z0-9]/", "", $this->session->get("username"));
 				$filename = $username . "." . $file->getExtension();
 				
 				$file->moveTo("/var/www/KrebsTracker/public/files/resumes/".$filename);
@@ -161,12 +161,16 @@ class UsersController extends ControllerBase {
 				//Update their account to reflect the existence of a resume
 				$user = Users::findFirstById($this->session->get('id'));
 				
-				$user->ResumeUploaded = true;
+				$user->ResumeUploaded = 1;
 				$user->ResumeFile = $filename;
 				$user->DateResumeUploaded = (new DateTime())->format('Y-m-d H:i:s');
 				
-				$user->save();
+				if(!$user->save()){
 				
+					foreach($user->getMessages() as $message){
+						$this->flashSession->error($message->getMessage());
+					}
+				}
 				$this->flashSession->success("Successfully uploaded resume.");
 			}
 			else{

@@ -16,8 +16,9 @@
 		
 			<!-- Content Injection Start -->
 		
-			<?php echo $this->getContent(); ?>
-		
+			<div id='content' class='col-md-12'>
+				<?php echo $this->getContent(); ?>
+			</div>
 			<!-- Content Injection End -->
 			
 			<div id='foot' class='col-md-10 centered-block'></div>

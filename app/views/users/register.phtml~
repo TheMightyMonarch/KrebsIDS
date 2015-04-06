@@ -8,12 +8,12 @@ if(isset($messages)){
 
 	foreach($messages as $message){
 		$html .= "
-			<p class='col-xs-12>
+			<p class='col-xs-12'>
 				$message
 			</p>
 		";
 	}
-exit(var_dump($html));
+
 	echo $html;
 }
 
