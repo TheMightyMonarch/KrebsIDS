@@ -23,6 +23,7 @@ their own.
 Progress
 ======================================
 
+Access Control Plugin - Complete (needs modification for each added action and controller)
 User Registration - Complete
 User Login - Complete
 Resume Uploading - Complete
