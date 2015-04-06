@@ -3,7 +3,7 @@ Brian Krebs Intrusion Detection System
 ======================================
 
 This project's goal is to scan
-krebsonsecurity.com for a users'
+krebsonsecurity.com for a user's
 place of employment. Upon detection,
 the site will automatically acquire a
 list of available job openings via
