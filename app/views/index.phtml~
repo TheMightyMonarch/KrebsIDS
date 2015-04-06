@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" />		<link rel="stylesheet" href="/../../public/css/main.css" />
+		
+		<title>Brian Krebs IDS</title>
+		
+		<script type='text/javascript' src='https://code.jquery.com/jquery-2.1.3.min.js'></script>
+	</head>
+<body>
+	<div id='worldEdge' class='container-fluid'>
+
+		<div id='world'>
+
+			<div id='messages'></div>
+		
+			<!-- Content Injection Start -->
+		
+			<?php echo $this->getContent(); ?>
+		
+			<!-- Content Injection End -->
+			
+			<div id='foot' class='col-md-10 centered-block'></div>
+
+		<!-- End of the World -->
+		</div>
+
+	<!-- WorldEdge end -->
+	</div>
+</body>
+</html>

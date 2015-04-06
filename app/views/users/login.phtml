@@ -1,0 +1,48 @@
+<?php
+
+$form = new Forms_LoginForm();
+$form->generate();
+?>
+
+<div class='col-xs-6 text-danger' style='padding: 5px;'>
+<?php
+if(isset($messages)){
+	foreach($messages as $message){
+		echo $message . "<br/>";
+	}
+}
+?>
+</div>
+
+<div class='col-md-12'>
+	<form class='form-horizontal' name='loginform' method='post' action='/users/login'>
+	<?php
+		foreach($form as $element){
+			if($element->getName() != 'submit'){
+				echo "
+					<div class='form-group'>
+						<label class='col-xs-1 control-label' for='".$element->getName()."'>
+							".$element->getLabel()."
+						</label>
+						<div class='col-xs-4'>
+							".$element."
+				";
+				$messages = $form->getMessagesFor($element->getName());
+				if($messages){
+					foreach($form->getMessagesFor($element->getName()) as $message){
+						echo "<span class='help-block text-danger'>$message</span>";
+					}
+				}
+				echo "</div></div>";
+			}
+			else{
+				echo "<div class='form-group col-xs-3'>".$element."</div>";
+			}
+		}
+	?>
+	</form>
+</div>
+
+<div class='col-md-12'>
+	<?php echo $this->tag->linkTo('users/register/', 'Register a new account'); ?>
+</div>

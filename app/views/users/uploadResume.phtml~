@@ -1,0 +1,23 @@
+
+
+<?php
+
+if(isset($messages)){
+	$html = '';
+	
+	foreach($messages as $message){
+		$html .= $message;
+	}
+	
+	echo $html;
+}
+
+$form = new Forms_ResumeForm();
+$form->generate();
+
+foreach($form as $element){
+	echo $
+	
+}
+
+?>

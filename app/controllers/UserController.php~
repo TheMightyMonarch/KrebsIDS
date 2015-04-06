@@ -1,0 +1,258 @@
+<?php
+
+class UserController extends ControllerBase {
+	private $filter = new \Phalcon\Filter();
+	private $ajaxMessages = array(
+		'errors'	=> array(),
+		'messages'	=> array()
+	);
+	
+	const MIME_WHITELIST = array(
+		'pdf'	=> 'application/pdf',
+		'docx'	=> 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+		'odt'	=> 'application/vnd.oasis.opendocument.text'
+	);
+	const MAX_FILESIZE_BYTE = 8192;
+
+	public function initialize(){
+		//This controller is for logged in users only
+		if(!$this->session->has("username" && $this->dispatcher->getActionName() != "register"){
+			$this->dispatcher->forward(array(
+				'controller'	=> 'users',
+				'action'		=> 'login'
+			));
+		}
+	}
+
+	//Login business logic
+	public function loginAction(){
+		if(!$this->request->isPost()) return;
+
+		$username = $this->request->getParam('username');
+		$password = $this->request->getParam('password');
+
+		//magic method for doing exactly what it says it's doing
+		$user = Users::findFirstByUsername($username);
+
+		if($user){
+			//The salt is included within the hash automatically
+			if($this->security->checkHash($password, $user->password)){
+				$this->session->set('id', $user->id);
+				$this->session->set('username', $username);
+
+				$this->forward(array(
+					'controller'	=> 'users',
+					'action'		=> 'settings'
+				));
+			}
+		}
+
+		//Their login failed, no need to tell them why
+		$this->flash->error("Login failed.");
+	}
+
+	/*
+	 * Method allows for user registration
+	 *
+	 * We'd normally want some email confirmation and a captcha,
+	 * but time constraints
+	 */
+	public function registerAction(){
+		if(!$this->request->isPost()) return;
+
+		$user = new Users();
+
+		$user->Username = $this->request->getParam('username');
+		$user->Password = $this->request->getParam('password');
+		$passwordConfirm = $this->request->getParam('passwordConfirm');
+		$user->Email = $this->request->getParam('email');
+		$user->FirstName = $this->request->getParam('firstName');
+		$user->LastName = $this->request->getParam('lastName');
+
+		if($user->password !== $passwordConfirm){
+			$this->flash->error("Passwords must match");
+			return;
+		}
+
+		if($user->validate()){
+			//Stores hash and salt in the same field for ease of use
+			$user->password = $this->security->hash($user->password);
+
+			$user->save();
+
+			//TODO add email verification
+
+			$this->flash->success("User account successfully created!");
+			
+			$this->dispatcher->forward(array(
+				'controller'	=> 'users',
+				'action'		=> 'login'
+			));
+		}
+	}
+	
+	public function settingsAction(){
+		$userId = $this->session->get('id');
+	
+		$user = Users::getFirstById($userId);
+
+		$skills = Skills::fetchSkillsByUserId($userId);
+		$coverTemplate = CoverTemplates::fetchTemplateByUserId($userId);
+		$companyAliases = CompanyAliases::fetchCompanyAliasesByUserId($userId);
+		
+		$this->view->setVar('resumeLocation', $user->ResumeLocation);
+		$this->view->setVar('skills', $skills);
+		$this->view->setVar('coverTemplate', $coverTemplate);		
+		$this->view->setVar('companyAliases', $companyAliases);
+	}
+	
+	/*
+	 * Helper actions
+	 */
+	
+	//Create actions
+	
+	public function uploadResumeAction(){
+		if(!$this->request->hasFiles()){
+			$this->ajaxMessages['errors'] = 'No files uploaded';
+			echo json_encode($this->ajaxMessages);
+			
+			return;
+		}
+		
+		foreach($this->request->getUploadedFiles() as $file){
+			//Check to see if the extension and (real) MIME type are allowed and match
+			if(array_key_exists($file->getExtension(), $this->MIME_WHITELIST)
+				&& in_array($file->getRealType(), $this->MIME_WHITELIST)
+			){
+				if($file->getSize() > MAX_FILESIZE_BYTE){
+					$this->ajaxMessages['errors'] = 'File too large.';
+					break;
+				}
+				
+				$filename = $this->session->get("username") . "." . $file->getExtension();
+				
+				$file->moveTo("/files/resumes/".);
+				
+				$user = User::getFirstById($this->session->get('id'));
+				$user->ResumeUploaded = 1;
+				$user->ResumeFile = $filename;
+				$user->DateResumeUploaded = (new DateTime())->format('Y-m-d H:i:s');
+				$user->save();
+				
+				$this->ajaxMessages['messages'][] = "Successfully uploaded resume."; 
+			}
+		}
+		
+		echo json_encode($this->ajaxMessages);
+	}
+	
+	public function ajaxAddSkillAction(){
+		if(!$this->request->isPost() || !$this->request->isAjax()){
+			$this->ajaxMessages['errors'][] = "No skills selected";
+			echo json_encode($this->ajaxMessages);
+
+			return;
+		}
+		
+		$skills = $this->request->getPost('skills');
+		$userId = $this->session->get('id');
+		
+		$skillsModel = new Skills();
+		
+		$skillRows = array();
+		
+		//Gives the front end some flexibility
+		if(!is_array($skills)){
+			$skills = array($skills);
+		}
+		
+		foreach($skills as $skill){
+			$skillModel = new Skills();
+			
+			$skillModel->UserId = $userId;
+		
+			//Security happens to be one of OUR skills; no XSS allowed
+			$skillsModel->Skill = $this->filter->sanitize($skill, 'string');
+
+			if(!$skillsModel->isValid()){
+				$this->ajaxMessages['errors'][] = "Skill: \"$skill\" is invalid";
+			}
+			else{
+				$skillRows[] = $skillModel;
+			}
+		}
+		
+		if(empty($this->ajaxMessages['errors']){
+			foreach($skillRows as $row){
+				$row->save();
+			}
+		}
+		
+		echo json_encode($this->ajaxMessages);
+	}
+	
+	public function ajaxAddCompanyAliasAction(){
+		if(!$this->request->isPost() || !$this->request->isAjax()){
+			$this->ajaxMessages['errors'][] = "No company aliases selected";
+			echo json_encode($this->ajaxMessages);
+
+			return;
+		}
+		
+		$aliases = $this->request->getPost('aliases');
+		$userId = $this->session->get('id');
+		
+		$aliasRows = array();
+		
+		foreach($aliases as $alias){
+			$aliasModel = new CompanyAliases();
+			
+			$aliasModel->UserId = $userId;
+		
+			//Security happens to be one of OUR skills; no XSS allowed
+			$aliasesModel->Skill = $this->filter->sanitize($alias, 'string');
+
+			if(!$aliasesModel->isValid()){
+				$this->ajaxMessages['errors'][] = "Skill: \"$alias\" is invalid";
+			}
+			else{
+				$aliasRows[] = $aliasesModel;
+			}
+		}
+		
+		if(empty($this->ajaxMessages['errors']){
+			foreach($aliasRows as $row){
+				$row->save();
+			}
+		}
+		
+		echo json_encode($this->ajaxMessages);
+	}
+	
+	public function ajaxAddCoverTemplateAction(){
+		if(!$this->request->isPost() || !$this->request->isAjax()){
+			$this->ajaxMessages['errors'][] = "No template provided";
+			echo json_encode($this->ajaxMessages);
+			
+			return;
+		}
+		
+		$template = $this->request->getPost('coverTemplate', 'string');
+		
+	}
+	
+	//Delete actions
+	
+	public function deleteResumeAction(){
+	}
+	
+	public function ajaxDeleteSkillAction(){
+	}
+	
+	public function ajaxDeleteCompanyAliasAction(){
+	}
+	
+	public function ajaxDeleteCoverTemplateAction(){
+	}
+}

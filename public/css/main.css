@@ -1,0 +1,13 @@
+.article
+{
+	border-radius: 5px;
+	border: 2px solid #428bca;
+	box-shadow: 7px 7px 4px #a0a0a0;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+.article-content
+{
+	padding: 15px;
+}

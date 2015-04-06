@@ -1,0 +1,45 @@
+<p><?php $this->flashSession->output()?></p>
+
+<?php
+
+$form = new Forms_ResumeForm();
+$form->generate();
+
+?>
+
+<div class='col-md-12'>
+	<form class='form-horizontal' role='form' name='resume-upload' method='post' action='/users/uploadResume' enctype="multipart/form-data">
+	<?php
+		foreach($form as $element){
+			if($element->getName() != 'submit'){
+				echo "
+					<div class='form-group'>
+						<label class='col-xs-2 control-label' for='".$element->getName()."'>
+							".$element->getLabel()."
+						</label>
+						<div class='col-xs-4'>
+							".$element."
+				";
+				$messages = $form->getMessagesFor($element->getName());
+				if($messages){
+					foreach($form->getMessagesFor($element->getName()) as $message){
+						echo "<span class='help-block text-danger'>$message</span>";
+					}
+				}
+				echo "</div></div>";
+			}
+			else{
+				echo "<div class='form-group col-xs-3'>".$element."</div>";
+			}
+		}
+	?>
+	</form>
+	
+	<!-- Forms to be populated by AJAX -->
+	
+	<div id='skills' class='col-md-12'></div>
+	<div id='company-aliases' class='col-md-12'></div>
+	<div id='coverletter-template' class='col-md-12'></div>
+	
+	<!-- End of AJAX populated forms -->
+</div>
