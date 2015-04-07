@@ -21,7 +21,7 @@ class Forms_ResumeForm extends Form {
 			$this->add($field);
 		}
 		
-		$this->add(new Submit('submit', array(
+		$this->add(new Submit('upload', array(
 			'value' => 'Upload',
 			'class' => 'form-control btn btn-primary'
 		)));
