@@ -27,13 +27,13 @@ Access Control Plugin - Complete (needs modification for each added action and c
 User Registration - Complete
 User Login - Complete
 Resume Uploading - Complete
-Skills tracking - In Progress
+Skills tracking - Complete
 Company Aliasing - In Progress
 Coverletter Templating - In Progress
 Mad-Lib Engine - Not Started
-krebsonsecurity.com scanner - Not Started
-Auto-application processor - not started
-Frontend cleanup - Not Started
+krebsonsecurity.com scanner - In Progress
+Auto-application processor - In Progress
+Frontend cleanup - In Progress
 
 Security testing via SqlMap and manual XSS injection - Up to date with completed functionality
 
