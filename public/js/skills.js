@@ -1,4 +1,4 @@
-function setListeners(){
+function setSkillListeners(){
 	$('#skill-add').click(function(){
 		showAddSkill();
 	});
@@ -61,5 +61,5 @@ function clearSkills(){
 }
 
 $(document).ready(function(){
-	setListeners();
+	setSkillListeners();
 });

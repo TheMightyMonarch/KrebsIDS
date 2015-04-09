@@ -4,7 +4,7 @@ class UsersController extends ControllerBase {
 	//For keeping us safe from that nasty XSS
 	private $filter;
 	//We could use the flash component in lieu of this, but that's less flexible
-	private $ajaxMessages;
+	private $ajaxMessages = array();
 	
 	//if this were php 5.6 we could make this a real constant
 	private $MIME_WHITELIST = array(
@@ -102,12 +102,15 @@ class UsersController extends ControllerBase {
 			'bind' => array('userId' => $userId)
 		));
 		//$coverTemplate = CoverTemplates::fetchTemplateByUserId($userId);
-		//$companyAliases = CompanyAliases::fetchCompanyAliasesByUserId($userId);
+		$aliases = CompanyAliases::find(array(
+			'conditions' => 'UserId = :userId:',
+			'bind' => array('userId' => $userId)
+		));
 
 		$this->view->setVar('resumeLocation', $user->ResumeFile);
 		$this->view->setVar('skills', $skills);
 		//$this->view->setVar('coverTemplate', $coverTemplate);		
-		//$this->view->setVar('companyAliases', $companyAliases);
+		$this->view->setVar('aliases', $aliases);
 	}
 	
 	/*
@@ -149,7 +152,9 @@ class UsersController extends ControllerBase {
 				
 				$user->ResumeUploaded = 1;
 				$user->ResumeFile = $filename;
-				$user->DateResumeUploaded = (new DateTime())->format('Y-m-d H:i:s');
+                                
+                                $date = new DateTime();
+				$user->DateResumeUploaded = $date->format('Y-m-d H:i:s');
 				
 				if(!$user->save()){
 				
@@ -177,7 +182,7 @@ class UsersController extends ControllerBase {
 		
 		$skill = $this->request->getPost('skill');
 		$userId = $this->session->get('id');
-			
+		
 		$skillModel = new Skills();
 			
 		$skillModel->UserId = $userId;
@@ -186,10 +191,10 @@ class UsersController extends ControllerBase {
 		$skillModel->Skill = $this->filter->sanitize($skill, 'string');
 
 		if(!$skillModel->save()){
+			exit(var_dump($skillModel->getMessages()));
+		
 			echo "0";
 
-			echo "0";
-			
 			return;
 		}
 
@@ -198,45 +203,30 @@ class UsersController extends ControllerBase {
 	
 	public function ajaxAddCompanyAliasAction(){
 		if(!$this->request->isPost() || !$this->request->isAjax()){
-			$this->ajaxMessages['errors'][] = "No company aliases selected";
-			echo json_encode($this->ajaxMessages);
+			echo "0";
 
 			return;
 		}
 		
-		$aliases = $this->request->getPost('aliases');
+		$alias = $this->request->getPost('alias');
 		$userId = $this->session->get('id');
-		
-		$aliasRows = array();
-		
-		//Again, front end flexibility
-		if(!is_array($aliases)){
-			$aliases = array($aliases);
-		}
-		
-		foreach($aliases as $alias){
-			$aliasModel = new CompanyAliases();
 			
-			$aliasModel->UserId = $userId;
-		
-			//Security happens to be one of OUR skills; no XSS allowed
-			$aliasesModel->Skill = $this->filter->sanitize($alias, 'string');
+		$aliasModel = new CompanyAliases();
+			
+		$aliasModel->UserId = $userId;
+	
+		//Security happens to be one of OUR skills; no XSS allowed
+		$aliasModel->Alias = $this->filter->sanitize($alias, 'string');
 
-			if(!$aliasesModel->isValid()){
-				$this->ajaxMessages['errors'][] = "Skill: \"$alias\" is invalid";
-			}
-			else{
-				$aliasRows[] = $aliasesModel;
-			}
+		if(!$aliasModel->save()){
+			echo "0";
+
+			echo "0";
+			
+			return;
 		}
-		
-		if(empty($this->ajaxMessages['errors'])){
-			foreach($aliasRows as $row){
-				$row->save();
-			}
-		}
-		
-		echo json_encode($this->ajaxMessages);
+
+		echo $aliasModel->Id;
 	}
 	
 	public function ajaxAddCoverTemplateAction(){
@@ -281,7 +271,28 @@ class UsersController extends ControllerBase {
 		echo json_encode($this->ajaxMessages);
 	}
 	
-	public function ajaxDeleteCompanyAliasAction(){
+	public function ajaxRemoveCompanyAliasAction(){
+		if(!$this->request->isPost() || !$this->request->isAjax()){
+			$this->ajaxMessages['errors'][] = "Invalid request.";
+			echo json_encode($this->ajaxMessages);
+			
+			return;
+		}
+		
+		$id = $this->request->getPost('id', 'string');
+	
+		$alias = new CompanyAliases();
+		
+		$alias->Id = $id;
+		
+		if($alias->delete()){
+			$this->ajaxMessages['success'][] = "Removed row: ".$id;
+		}
+		else{
+			$this->ajaxMessages['error'][] = "Failed to delete skill: ".$id;
+		}
+		
+		echo json_encode($this->ajaxMessages);
 	}
 	
 	public function ajaxDeleteCoverTemplateAction(){

@@ -1,4 +1,4 @@
-function setListeners(){
+function setSkillListeners(){
 	$('#skill-add').click(function(){
 		showAddSkill();
 	});
@@ -31,6 +31,7 @@ function addSkill(name){
 	$.post('/users/ajaxAddSkill', {
 		'skill': name
 	}).done(function(id){
+		alert(id);
 		$('#new-skill-div').remove();
 		
 		var html = "<div class='row col-md-12'>";
@@ -61,5 +62,5 @@ function clearSkills(){
 }
 
 $(document).ready(function(){
-	setListeners();
+	setSkillListeners();
 });

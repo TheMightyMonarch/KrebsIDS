@@ -59,7 +59,28 @@ $form->generate();
 	<input type='button' value='Add Skill' id='skill-add' class='btn form-control' />
 </div>
 
-<div id='company-aliases' class='col-md-12'></div>
+<div id='aliases' class='col-md-12'>
+	<div class='col-md-4'><h4>Add the names Brian Krebs might use for your company</h4></div>
+	<?php
+		foreach($aliases as $alias){
+			echo "
+				<div class='col-md-12 row' id='aliasrow-".$skill->Id."'>
+					<div class='col-md-2'>
+						" . $alias->Alias . "
+					</div>
+					<div class='col-md-2'>
+						<input type='button' class='btn btn-primary form-control remove-alias' id='alias-" . $alias->Id . "' value='Remove' id='alias-".$alias->Id."' />
+					</div>
+				</div>
+			";
+		}
+	?>
+</div>
+<div class='col-md-4'>
+	<input type='button' value='Add Alias' id='alias-add' class='btn form-control' />
+</div>
+
 <div id='coverletter-template' class='col-md-12'></div>
 
 <script src="/../../public/js/skills.js"></script>
+<script src="/../../public/js/companyAliases.js"></script>
